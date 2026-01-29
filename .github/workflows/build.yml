@@ -16,23 +16,28 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout repository
+        uses: actions/checkout@v4
       
       - name: Install dependencies
         run: |
           pip install west
-          sudo apt-get install -y cmake ninja-build gperf device-tree-compiler
+          sudo apt-get update
+          sudo apt-get install -y cmake ninja-build gperf device-tree-compiler git
       
-      - name: Init ZMK
+      - name: Initialize ZMK
         run: |
           west init -m https://github.com/zmkfirmware/zmk.git --mr main
           west update
-          west zephyr-export
       
-      - name: Copy custom shield
+      - name: Copy custom shield files
         run: |
+          # Создаём папку для shield (если её нет)
           mkdir -p zmk/app/boards/shields/pomodoro
-          cp boards/shields/pomodoro/* zmk/app/boards/shields/pomodoro/ || echo "Using default"
+          # Копируем файлы из репозитория в ZMK
+          cp $GITHUB_WORKSPACE/boards/shields/pomodoro/* zmk/app/boards/shields/pomodoro/
+          echo "Files copied:"
+          ls -la zmk/app/boards/shields/pomodoro/
       
       - name: Build firmware
         run: |
@@ -44,3 +49,4 @@ jobs:
         with:
           name: firmware-${{ github.event.inputs.shield }}-${{ github.event.inputs.board }}
           path: zmk/app/build/zephyr/zmk.uf2
+          if-no-files-found: error
