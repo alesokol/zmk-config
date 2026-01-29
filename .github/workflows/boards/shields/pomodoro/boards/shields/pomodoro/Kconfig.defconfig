@@ -1,0 +1,6 @@
+if SHIELD_POMODORO
+
+config ZMK_KEYBOARD_NAME
+    default "Pomodoro"
+
+endif
